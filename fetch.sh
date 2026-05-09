@@ -33,6 +33,7 @@ echo
 yt-dlp \
   -t sleep \
   --skip-download \
+  --write-subs \
   --write-auto-subs \
   --sub-langs "en" \
   --sub-format json3 \

@@ -75,6 +75,7 @@ def extract_transcript(events: list, ts_interval: int = TS_INTERVAL_SEC) -> str:
         if not segs or ev.get("aAppend"):
             continue
         text = "".join(s.get("utf8", "") for s in segs)
+        text = text.replace("\xa0", " ").replace("\n", " ")
         text = ANNOTATION_RE.sub(" ", text)
         text = SPEAKER_RE.sub(" ", text).strip()
         if not text:
