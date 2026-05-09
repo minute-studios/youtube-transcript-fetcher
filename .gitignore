@@ -1,0 +1,8 @@
+subs/
+subs-*/
+*.json3
+*.info.json
+*.srt
+__pycache__/
+*.pyc
+.DS_Store
