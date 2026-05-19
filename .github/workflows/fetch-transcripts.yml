@@ -21,7 +21,6 @@ jobs:
   fetch-transcripts:
     runs-on: ubuntu-latest
     timeout-minutes: 300
-    if: inputs.slug == '' || inputs.slug == matrix.slug
     strategy:
       max-parallel: 1
       matrix:
@@ -40,6 +39,7 @@ jobs:
         run: pip install yt-dlp==2026.03.17
 
       - name: Fetch new transcripts
+        if: inputs.slug == '' || inputs.slug == matrix.slug
         run: ./scripts/fetch-channel.sh "${{ matrix.slug }}" "${{ matrix.url }}" "${{ inputs.limit }}"
 
       - name: Commit and push changes
