@@ -1,6 +1,6 @@
 # youtube-transcript-fetcher
 
-Two small scripts for pulling auto-captioned transcripts from a YouTube channel and turning them into RAG-ready markdown.
+Two small scripts for pulling auto-captioned transcripts from a YouTube channel and turning them into RAG-ready markdown. A GitHub Actions workflow runs weekly to accumulate new transcripts automatically.
 
 ## What it does
 
@@ -8,6 +8,12 @@ Two small scripts for pulling auto-captioned transcripts from a YouTube channel 
 2. **`to-rag.py`** — converts each `(json3, info.json)` pair into a single markdown file: slim YAML frontmatter, prose transcript with sparse `[mm:ss]` timestamps at sentence boundaries, and the YouTube description as a separate section.
 
 Output is one `.md` per video, designed to chunk well for retrieval (transcript first, supplementary description after a horizontal rule).
+
+## Accumulated transcripts
+
+Transcripts are committed to this repo under `transcripts/{channel}/` and kept up to date by a weekly workflow. Download a zip of all transcripts for a channel from its GitHub Release:
+
+- **MinuteEarth** — `releases/download/transcripts-minuteearth/minuteearth.zip`
 
 ## Requirements
 
@@ -28,6 +34,32 @@ OUT_DIR=./my-subs ./fetch.sh                            # custom output dir
 # Convert to RAG markdown
 python3 to-rag.py ./subs                                # writes ./subs/rag/*.md
 python3 to-rag.py ./subs ./out                          # custom output dir
+```
+
+## Workflow
+
+The GitHub Actions workflow (`.github/workflows/fetch-transcripts.yml`) runs every Monday at 3am UTC and can also be triggered manually from the Actions tab.
+
+Each channel in the workflow matrix runs as a separate job (in series to avoid conflicts). The workflow:
+
+1. Restores the per-channel download archive from `.yt-archives/{slug}.txt`
+2. Downloads only new videos via `scripts/fetch-channel.sh`
+3. Converts them to markdown and commits to `transcripts/{slug}/`
+4. Publishes an updated zip to the channel's GitHub Release
+
+**Adding a channel** — add one entry to the `matrix.include` in the workflow YAML:
+
+```yaml
+- slug: some-channel
+  url: https://www.youtube.com/@SomeChannel/videos
+```
+
+**Running a single channel manually** — trigger the workflow from the Actions tab, set the `slug` input to the channel's slug (e.g. `minuteearth`). Optionally set `limit` to cap the number of videos fetched (useful for testing).
+
+The scripts under `scripts/` can also be run locally:
+
+```bash
+./scripts/fetch-channel.sh minuteearth https://www.youtube.com/@MinuteEarth/videos 5
 ```
 
 ## Output format
